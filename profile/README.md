@@ -4,7 +4,7 @@
 
 # OpenTest
 
-OpenTest is a modular ecosystem for laboratory optical-module testing. Its repositories deliberately separate reusable business services, instrument integration, optical-path design, deterministic measurement algorithms, cryptographic utilities, and shared visual assets.
+OpenTest is a modular ecosystem for laboratory optical-module testing. Its repositories deliberately separate reusable business services, instrument integration, optical-path design, deterministic measurement algorithms, cryptographic utilities, the assembled test platform, and shared visual assets.
 
 It is not a monorepo. Each project owns its source code, releases, architecture decisions, risks, and detailed design documents.
 
@@ -12,47 +12,50 @@ It is not a monorepo. Each project owns its source code, releases, architecture 
 
 ```mermaid
 flowchart TB
-    FOUNDATION["OpenTest.Foundation<br/>Identity, facilities, machines, fleet foundation"]
+    FOUNDATION["OpenTest.Foundation<br/>Identity, facilities, machines, fleet,<br/>and the ErrorCatalog module"]
     INSTRUMENTS["OpenTest.Instruments<br/>Device contracts, drivers, and lab sharing"]
     OPTICAL["OpenTest.OpticalPath<br/>Optical topology design and validation"]
     ALGORITHMS["OpenTest.Algorithms<br/>Pure measurement calculation and diagnostics"]
     CRYPTO["OpenTest.Crypto<br/>Cryptographic compatibility and utility tools"]
-    TESTING["Future testing project<br/>System orchestration, integration, and reports"]
+    TESTBENCH["OpenTest.TestBench<br/>Test platform: orchestration, integration, reports"]
     DESIGN["opentest.design-hub<br/>Brand assets"]
 
     DESIGN -. brand assets .-> FOUNDATION
     DESIGN -. brand assets .-> OPTICAL
     DESIGN -. brand assets .-> CRYPTO
-    INSTRUMENTS --> TESTING
-    OPTICAL --> TESTING
-    ALGORITHMS --> TESTING
-    CRYPTO --> TESTING
-    FOUNDATION --> TESTING
+    FOUNDATION --> TESTBENCH
+    INSTRUMENTS --> TESTBENCH
+    OPTICAL --> TESTBENCH
+    ALGORITHMS --> TESTBENCH
+    CRYPTO --> TESTBENCH
 ```
 
-The arrows to the future testing project express integration, not source-code coupling. Domain projects publish focused capabilities; the testing layer will own test sequencing, product rules, final pass/fail decisions, reporting, and integration verification.
+The arrows express integration through published packages and stable contracts, not source-code coupling. Domain projects publish focused capabilities; TestBench owns test sequencing, product rules, final pass/fail decisions, reporting, and integration verification.
 
 ## Repositories
 
 | Repository | Responsibility | Deliberate boundary |
 | --- | --- | --- |
-| [OpenTest.Foundation](https://github.com/OpenTest-Labs/opentest.foundation) | Identity, facilities, machine management, and reusable platform services. | It does not own instrument protocols, optical calculations, or test execution. |
+| [OpenTest.Foundation](https://github.com/OpenTest-Labs/opentest.foundation) | Identity, facilities, machine management, fleet management, and reusable platform services. It also hosts the ErrorCatalog business module. | It does not own instrument protocols, optical calculations, or test execution. |
 | [OpenTest.Instruments](https://github.com/OpenTest-Labs/opentest.instruments) | Instrument contracts, Windows-capable drivers, and shared-lab instrument hosting. | It does not own product test logic or measurement-result interpretation. |
 | [OpenTest.OpticalPath](https://github.com/OpenTest-Labs/opentest.opticalpath) | Versioned optical topology contracts, route validation, path plans, and the offline designer. | It does not bind logical paths to physical drivers or perform calibrated measurements. |
 | [OpenTest.Algorithms](https://github.com/OpenTest-Labs/opentest.algorithms) | Pure, reproducible calculations, fitting, evidence, and diagnostics for completed measurement data. | It does not acquire data, parse device exports, control instruments, or decide product pass/fail. |
 | [OpenTest.Crypto](https://github.com/OpenTest-Labs/opentest.crypto) | Cryptographic compatibility helpers and narrowly scoped cryptographic utilities. | It does not own licensing, remote KMS/HSM, or organization-wide key governance. |
+| [OpenTest.TestBench](https://github.com/OpenTest-Labs/opentest.testbench) | The assembled test platform: plugin-based test orchestration, MES and system integration, the test framework, and reporting over the other projects. | It does not own the domain capabilities it composes, nor instrument protocols or measurement algorithms. |
 | [opentest.design-hub](https://github.com/OpenTest-Labs/opentest.design-hub) | OpenTest brand assets. | It does not replace project-level architecture or implementation documentation. |
-| `opentest.skills` | Reserved repository for OpenTest-specific reusable skills and workflow assets. | It is not an application runtime dependency. |
+| `opentest.skills` | Reserved repository for OpenTest-specific reusable skills and workflow assets. It has no published content yet. | It is not an application runtime dependency. |
+
+> ErrorCatalog is no longer a standalone repository. It is composed into `opentest.foundation` as the `modules/error-catalog/` business module, per Foundation ADR-0010. Its contracts package `OpenTest.ErrorCodes.Contracts` keeps an independent package name, version, and dependency boundary.
 
 ## Tooling direction
 
-Small, single-purpose developer and desktop tools normally live with the domain they explain or validate. A dedicated testing project is reserved for tools that coordinate multiple domains or validate the assembled system.
+Small, single-purpose developer and desktop tools normally live with the domain they explain or validate. Cross-domain orchestration, integrated regression, and system-level validation belong to TestBench, which assembles the other projects.
 
 | Project | Planned focused tooling |
 | --- | --- |
 | OpenTest.Algorithms | A scriptable algorithm CLI, a result-explanation workbench, and golden-fixture/method-version difference review. |
 | OpenTest.Crypto | A crypto CLI, ciphertext inspection and controlled migration, and lightweight local key use with a clear boundary from remote key governance. |
-| Future testing project | Test orchestration, integrated regression, test reporting, product rules, and final pass/fail authority. |
+| OpenTest.TestBench | Test orchestration, integrated regression, test reporting, product rules, and final pass/fail authority. |
 
 These are planning directions, not released components. Their detailed scope, implementation decisions, and acceptance criteria are recorded in the relevant project repository when work is approved.
 
