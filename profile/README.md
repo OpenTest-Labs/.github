@@ -15,7 +15,8 @@ flowchart TB
     FOUNDATION["OpenTest.Foundation<br/>Identity, facilities, machines, fleet,<br/>and the ErrorCatalog module"]
     INSTRUMENTS["OpenTest.Instruments<br/>Device contracts, drivers, and lab sharing"]
     OPTICAL["OpenTest.Optics.Path<br/>Optical topology design and validation"]
-    TRANSCEIVERS["OpenTest.Optics.Transceiver<br/>Read-only SFF/CMIS module interpretation"]
+    TRANSCEIVERS["OpenTest.Optics.Transceiver<br/>Read-only SFF/CMIS module interpretation<br/>and CMIS access package"]
+    CMISANALYZER["OpenTest Optics CMIS Analyzer<br/>WPF CMIS desktop tool"]
     ALGORITHMS["OpenTest.Algorithms<br/>Pure measurement calculation and diagnostics"]
     CRYPTO["OpenTest.Crypto<br/>Cryptographic compatibility and utility tools"]
     TESTBENCH["OpenTest.Test.Bench<br/>Test platform: orchestration, integration, reports"]
@@ -32,6 +33,7 @@ flowchart TB
     ALGORITHMS --> TESTBENCH
     CRYPTO --> TESTBENCH
     INSTRUMENTS -. "implements IModuleMemoryReader" .-> TRANSCEIVERS
+    CMISANALYZER -. "consumes OpenTest.Optics.Transceiver.Cmis" .-> TRANSCEIVERS
     TESTING -. "target domain design" .-> TESTBENCH
 ```
 
@@ -44,7 +46,8 @@ The arrows express integration through published packages and stable contracts, 
 | [OpenTest.Foundation](https://github.com/OpenTest-Labs/opentest.foundation) | Identity, facilities, machine management, fleet management, and reusable platform services. It also hosts the ErrorCatalog business module. | It does not own instrument protocols, optical calculations, or test execution. |
 | [OpenTest.Instruments](https://github.com/OpenTest-Labs/opentest.instruments) | Instrument contracts, Windows-capable drivers, and shared-lab instrument hosting. | It does not own product test logic or measurement-result interpretation. |
 | [OpenTest.Optics.Path](https://github.com/OpenTest-Labs/opentest.optics.path) | Versioned optical topology contracts, route validation, path plans, and the offline designer. | It does not bind logical paths to physical drivers or perform calibrated measurements. |
-| [OpenTest.Optics.Transceiver](https://github.com/OpenTest-Labs/opentest.optics.transceiver) | Standards-oriented, transport-independent read-only interpretation of pluggable transceiver module memory (SFF-8472 and CMIS): identity, monitoring, thresholds, alarms, applications, and datapaths as immutable snapshots with stable diagnostics. | It does not own physical I2C/USB adapters, instrument sessions, writes or firmware, product limits, or final pass/fail. |
+| [OpenTest.Optics.Transceiver](https://github.com/OpenTest-Labs/opentest.optics.transceiver) | Standards-oriented, transport-independent interpretation of pluggable transceiver module memory (SFF-8472 and CMIS): identity, monitoring, thresholds, alarms, applications, and datapaths as immutable read-only snapshots with stable diagnostics. It also publishes the `OpenTest.Optics.Transceiver.Cmis` read/write access package used by host tools. | It does not own physical I2C/USB adapters, the desktop shell, instrument sessions, firmware, product limits, or final pass/fail. |
+| [OpenTest Optics CMIS Analyzer](https://github.com/OpenTest-Labs/opentest.optics.cmis) | Windows desktop tool for CMIS 5.2/5.3 optical modules: register and CDB editing, monitoring, VDM diagnostics, read-only snapshots, and the transparent-serial, IICHIB/CH347, and simulated I2C adapters. | It does not own CMIS protocol semantics or decoding, which come from the `OpenTest.Optics.Transceiver.Cmis` package. |
 | [OpenTest.Algorithms](https://github.com/OpenTest-Labs/opentest.algorithms) | Pure, reproducible calculations, fitting, evidence, and diagnostics for completed measurement data. | It does not acquire data, parse device exports, control instruments, or decide product pass/fail. |
 | [OpenTest.Crypto](https://github.com/OpenTest-Labs/opentest.crypto) | Cryptographic compatibility helpers and narrowly scoped cryptographic utilities. | It does not own licensing, remote KMS/HSM, or organization-wide key governance. |
 | [OpenTest.Test.Bench](https://github.com/OpenTest-Labs/opentest.test.bench) | The assembled test platform: plugin-based test orchestration, MES and system integration, the test framework, and reporting over the other projects. | It does not own the domain capabilities it composes, nor instrument protocols or measurement algorithms. |
