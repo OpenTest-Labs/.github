@@ -42,7 +42,7 @@ repository inherits them. None are published yet.
 
 The OpenTest glyph is locked: do not alter its shapes, proportions, or the red
 status dot. Asset masters, size sets, and usage guidance live in
-[opentest.design-hub](https://github.com/OpenTest-Labs/opentest.design-hub).
+[opentest.brand](https://github.com/OpenTest-Labs/opentest.brand).
 
 ## Ecosystem
 
