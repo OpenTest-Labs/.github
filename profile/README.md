@@ -51,7 +51,7 @@ The arrows express integration through published packages and stable contracts, 
 | [OpenTest.Test.Platform](https://github.com/OpenTest-Labs/opentest.test.platform) | Target design for the server-side test-platform domain: test schemes and product applicability, versioned plan releases, test-case package dependencies, Bench/Resource configuration, MES/simulated context, and run summaries. | It is not a current build or runtime dependency; live execution and device drivers stay in `opentest.test.bench`, and in-place modernization precedes any extraction. |
 | [opentest.brand](https://github.com/OpenTest-Labs/opentest.brand) | OpenTest brand assets. | It does not replace project-level architecture or implementation documentation. |
 | `opentest.skills` | Reserved repository for OpenTest-specific reusable skills and workflow assets. It has no published content yet. | It is not an application runtime dependency. |
-| `opentest.testpackage-demo` | Reserved demonstration repository for an example published TestCase package. Scaffolded with a license and ignore rules only; it has no published content yet. | It is not a build or runtime dependency of any project. |
+| `opentest.test.sample` | Reserved demonstration repository for an example published TestCase package. Scaffolded with a license and ignore rules only; it has no published content yet. | It is not a build or runtime dependency of any project. |
 
 > ErrorCatalog is no longer a standalone repository. It is composed into `opentest.foundation` as the `modules/error-catalog/` business module, per Foundation ADR-0010. Its consumer contracts are published independently as `OpenTest.ErrorCatalog.Contracts`, the renamed successor of the retired `OpenTest.ErrorCodes.Contracts` package.
 
