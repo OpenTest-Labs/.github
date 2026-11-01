@@ -4,7 +4,7 @@
 
 # OpenTest
 
-OpenTest is a modular ecosystem for laboratory optical-module testing. Its repositories deliberately separate reusable business services, instrument integration, optical-path design, read-only transceiver interpretation and its CMIS read/write access package, a CMIS desktop analyzer, deterministic measurement algorithms, cryptographic utilities, the frozen test-case contract SDK, the server-side test control plane, the on-bench test runner, sharded test-data persistence, and MES integration adapters, around governance, standards, skills, and brand assets.
+OpenTest is a modular ecosystem for laboratory optical-module testing. Its repositories deliberately separate reusable business services, instrument integration, optical-path design, read-only transceiver interpretation and its CMIS read/write access package, a CMIS desktop analyzer, deterministic measurement algorithms, cryptographic utilities, the frozen test-case contract SDK, shared result-event contracts, the server-side test control plane, the on-bench test runner, sharded test-data persistence, and MES integration adapters, around governance, standards, skills, and brand assets.
 
 It is not a monorepo. Each project owns its source code, releases, architecture decisions, risks, and detailed design documents. The legacy Test Bench is archived: `opentest.test.control` (management plane) and `opentest.test.runner` (bench execution) are its successors.
 
@@ -25,6 +25,7 @@ flowchart TB
     ALGORITHMS["OpenTest.Algorithms<br/>Pure measurement calculation and diagnostics"]
     CRYPTO["OpenTest.Crypto<br/>Cryptographic compatibility and utility tools"]
     SDK["OpenTest.Test.Sdk<br/>Frozen OpenTest.Test.Case.Contracts"]
+    RESULTS["OpenTest.Test.Results<br/>Result-event wire contracts"]
     CONTROL["OpenTest.Test.Control<br/>ABP test control plane"]
     RUNNER["OpenTest.Test.Runner<br/>WPF bench runner (execution kernel in progress)"]
     STORAGE["OpenTest.Test.Storage<br/>Sharded test-data persistence adapters"]
@@ -37,6 +38,8 @@ flowchart TB
     CONTROL -->|"Runner.Contracts:<br/>snapshots + run writeback"| RUNNER
     SDK -->|"only dependency:<br/>ErrorCatalog.Contracts"| FOUNDATION
     RUNNER -->|"consumes"| SDK
+    RUNNER -->|"produces result events"| RESULTS
+    STORAGE -->|"consumes contract"| RESULTS
     STORAGE -->|"implements"| SDK
     MESADAPTER -->|"bridges"| SDK
     RUNNER -. "composes" .-> STORAGE
@@ -74,6 +77,7 @@ The arrows express integration through published packages and stable contracts, 
 | [OpenTest.Algorithms](https://github.com/OpenTest-Labs/opentest.algorithms) | Pure, reproducible calculations, fitting, evidence, and diagnostics for completed measurement data. | It does not acquire data, parse device exports, control instruments, or decide product pass/fail. |
 | [OpenTest.Crypto](https://github.com/OpenTest-Labs/opentest.crypto) | Cryptographic compatibility helpers, a key-agnostic WPF desktop tool, and narrowly scoped cryptographic utilities. | It does not own licensing, remote KMS/HSM, or organization-wide key governance. |
 | [OpenTest.Test.Sdk](https://github.com/OpenTest-Labs/opentest.test.sdk) | Source of truth for the single public contract package `OpenTest.Test.Case.Contracts` (1.0.0) shared by test cases and hosts, with an enforced API lock and migration documentation. | It publishes contracts only: no engine implementation, runtime, persistence, or drivers. The frozen legacy `OpenTest.Test.Bench.Shared` / `TestCase.Contracts` 1.0.1 packages are not produced here. |
+| [OpenTest.Test.Results](https://github.com/OpenTest-Labs/opentest.test.results) | Shared result-event wire contracts for Runner and Storage: the `schemaVersion = 1` envelope, serializer, JCS hashing, validation, the reviewed API lock, and golden fixtures. Publishes `OpenTest.Test.Results.Contracts` and `OpenTest.Test.Results.Contracts.Fixtures` (1.0.0). | It owns the wire contract only: it does not execute tests, persist results, or decide pass/fail. |
 | [OpenTest.Test.Control](https://github.com/OpenTest-Labs/opentest.test.control) | Independently deployed ABP Web test control plane: test schemes and product applicability, versioned plan releases, test-case package registration, Bench/Resource configuration, admission, and run summaries. It serves versioned bench snapshots and run-writeback endpoints to the Runner and authenticates through Foundation. Renamed in place from `opentest.test.platform`. | It is a greenfield control plane: it does not migrate legacy Bench tables or old data, does not store measurement values, and does not execute tests or drive instruments. |
 | [OpenTest.Test.Runner](https://github.com/OpenTest-Labs/opentest.test.runner) | WPF-first runner on the bench PC: single Foundation login, permission-driven navigation, offline-first bench-snapshot cache with a file outbox, run creation and writeback through the Test Control API, and the `Runner.Packages` test-case package loader. The execution kernel is the current slice. | It does not own management or configuration data, has no direct database access, and defers all configuration writes to the Test Control API. |
 | [OpenTest.Test.Storage](https://github.com/OpenTest-Labs/opentest.test.storage) | Test-data persistence adapters: family database × yearly file × month-rolled large tables behind a pluggable engine seam, `payload_json` extension discipline, blob lifecycle, retention and archival, and the Auto/External/BuiltIn/Dual composition. | It does not own test execution, product pass/fail, MES semantics, or vendor protocols. |
