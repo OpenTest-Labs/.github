@@ -8,58 +8,15 @@ OpenTest is a modular ecosystem for laboratory optical-module testing. Its repos
 
 It is not a monorepo. Each project owns its source code, releases, architecture decisions, risks, and detailed design documents. The legacy Test Bench is archived: `opentest.test.control` (management plane) and `opentest.test.runner` (bench execution) are its successors.
 
-## Ecosystem map
+## Ecosystem architecture
 
-```mermaid
-flowchart TB
-    ARCH["opentest.architecture<br/>Cross-project boundaries, baselines, ADRs"]
-    STANDARDS["opentest.standards<br/>Versioned development standards"]
-    SKILLS["opentest.skills<br/>Reusable development skills"]
-    BRAND["opentest.brand<br/>Brand assets"]
+<p align="center">
+  <img src="./assets/opentest-ecosystem.png" width="960" alt="OpenTest ecosystem architecture" />
+</p>
 
-    FOUNDATION["OpenTest.Foundation<br/>Identity, facilities, machines, fleet,<br/>and the ErrorCatalog module"]
-    INSTRUMENTS["OpenTest.Instruments<br/>Device contracts, drivers, and lab sharing"]
-    OPTICAL["OpenTest.Optics.Path<br/>Optical topology design and validation"]
-    TRANSCEIVERS["OpenTest.Optics.Transceiver<br/>Read-only SFF/CMIS module interpretation<br/>and CMIS access package"]
-    CMISANALYZER["OpenTest Optics CMIS Analyzer<br/>WPF CMIS desktop tool"]
-    ALGORITHMS["OpenTest.Algorithms<br/>Pure measurement calculation and diagnostics"]
-    CRYPTO["OpenTest.Crypto<br/>Cryptographic compatibility and utility tools"]
-    SDK["OpenTest.Test.Sdk<br/>Frozen OpenTest.Test.Case.Contracts"]
-    RESULTS["OpenTest.Test.Results<br/>Result-event wire contracts"]
-    CONTROL["OpenTest.Test.Control<br/>ABP test control plane"]
-    RUNNER["OpenTest.Test.Runner<br/>WPF bench runner (execution kernel in progress)"]
-    STORAGE["OpenTest.Test.Storage<br/>Sharded test-data persistence adapters"]
-    MESADAPTER["OpenTest.Test.Mes<br/>MES integration adapters"]
-    BENCH["OpenTest.Test.Bench<br/>Archived legacy platform (read-only)"]
-    DEMO["opentest.test.demo (labs)<br/>Executable contract-surface examples"]
-    COPILOT["opentest.copilot (labs)<br/>Conversational device runner experiment"]
-
-    FOUNDATION -->|"OIDC / Client SDK"| CONTROL
-    CONTROL -->|"Runner.Contracts:<br/>snapshots + run writeback"| RUNNER
-    SDK -->|"only dependency:<br/>ErrorCatalog.Contracts"| FOUNDATION
-    RUNNER -->|"consumes"| SDK
-    RUNNER -->|"produces result events"| RESULTS
-    STORAGE -->|"consumes contract"| RESULTS
-    STORAGE -->|"implements"| SDK
-    MESADAPTER -->|"bridges"| SDK
-    RUNNER -. "composes" .-> STORAGE
-    RUNNER -. "composes" .-> MESADAPTER
-    RUNNER -->|"single login"| FOUNDATION
-    INSTRUMENTS -. "device control:<br/>execution-kernel slice" .-> RUNNER
-    ALGORITHMS -. "planned consumer" .-> RUNNER
-    CRYPTO -. "planned consumer" .-> RUNNER
-    INSTRUMENTS -. "consumes Path.Runtime" .-> OPTICAL
-    INSTRUMENTS -. "implements IModuleMemoryReader" .-> TRANSCEIVERS
-    CMISANALYZER -. "consumes OpenTest.Optics.Transceiver.Cmis" .-> TRANSCEIVERS
-    COPILOT -. "independent consumer" .-> INSTRUMENTS
-    COPILOT -. "independent consumer" .-> OPTICAL
-    DEMO -->|"covers every public surface"| SDK
-    SKILLS -. "authoring and contract guidance" .-> SDK
-    BENCH -. "predecessor (frozen)" .-> CONTROL
-    BENCH -. "predecessor (frozen)" .-> RUNNER
-    STANDARDS -. "adopted revisions" .-> RUNNER
-    ARCH -. "boundary source of truth" .-> CONTROL
-```
+The layered map above is generated from `opentest.architecture`
+(`docs/design/diagrams/OpenTest-Architecture.drawio`, page "OpenTest Ecosystem").
+Edit that source and re-export the PNG rather than hand-editing the image.
 
 The arrows express integration through published packages and stable contracts, not source-code coupling. Domain projects publish focused capabilities. The Test Control plane owns test schemes, plan releases, test-case package registration, Bench/Resource configuration, admission, and run summaries. The Runner owns on-bench execution: it consumes versioned bench snapshots offline-first, replays run results through a file outbox, and its execution kernel plus `Runner.Packages` loader are the current delivery slice. The storage and MES adapters are composed by the runner through the frozen `OpenTest.Test.Case.Contracts` package; they are infrastructure behind the host, not decision owners. Final pass/fail sequencing that once belonged to TestBench moves to the Runner as its execution kernel lands.
 
